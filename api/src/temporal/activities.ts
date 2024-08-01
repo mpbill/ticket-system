@@ -5,7 +5,7 @@ import { Logger } from '@temporalio/worker';
 import { Ticket } from 'src/entity/ticket.entity';
 import { Organization } from 'src/entity/organization.entity';
 import { OauthTokensService } from 'src/oauth-tokens/oauth-tokens.service';
-const nylas = new NylasClient({ apiKey: process.env.NYLAS_API_KEY || 'nyk_v0_ku8lCMeP3fdwVrc5YAJ7X5ertUctbXuVrdmSEl2iWytqOIrWNRKh3xNVZ3pFlBN3', apiUri: process.env.NYLAS_API_URL || 'https://api.eu.nylas.com' });
+const nylas = new NylasClient({ apiKey: process.env.NYLAS_API_KEY || '', apiUri: process.env.NYLAS_API_URL });
 
 
 const db = new DatabaseClient(); // Your database client instance
@@ -89,7 +89,7 @@ export async function saveEmails(data: EmailGroup): Promise<void> {
 
             await db.saveEmail(email);
             await db.saveTicket(mapEmailEntityToTicket(email, data.org));
-            await nylas.messages.update({ identifier: '62ad3b8f-20d0-46f9-b741-e66723306dcf', messageId: email.emailId!, requestBody: { folders: [data.processedFolderId] } });
+            await nylas.messages.update({ identifier: data.org.oauthToken.grantId, messageId: email.emailId!, requestBody: { folders: [data.processedFolderId] } });
             await timeout(1000);
         }
     } finally {
